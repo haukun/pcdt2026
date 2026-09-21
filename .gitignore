@@ -1,0 +1,12 @@
+# 作品の原本は別管理（容量削減のため git では追跡しない）。
+# Mac へはフォルダごとコピーして持っていく運用。
+# フォルダ自体は残したいので、中身は無視しつつ .gitkeep だけ追跡する。
+sketches/*
+!sketches/.gitkeep
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/

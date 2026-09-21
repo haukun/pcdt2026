@@ -1,0 +1,318 @@
+:root {
+  --accent: #00e5ff;
+  --accent-2: #ff2d95;
+  --ink: #eaf6ff;
+  --panel: rgba(10, 14, 22, 0.55);
+  /* カード領域の幅（左マージン24 + カード幅 min(400,40vw) + 右ギャップ24）。
+     #stage の padding-left に使い、作品を右側領域の中央へ寄せる。 */
+  --card-zone: calc(48px + min(400px, 40vw));
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #05070c;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", sans-serif;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 左側のカード領域を避け、右側の残り領域の中央に作品を置く */
+  padding-left: var(--card-zone, 0px);
+  background:
+    radial-gradient(1200px 800px at 50% 40%, #0b1120 0%, #05070c 70%);
+}
+
+/* ------- 作品フレーム（中央、実サイズをスケール） ------- */
+#frames {
+  position: relative;
+  width: 0;   /* JSで作品サイズを設定 */
+  height: 0;
+}
+
+.sketch-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  pointer-events: none;
+  box-shadow: 0 30px 120px rgba(0, 0, 0, 0.6);
+}
+
+.sketch-frame.active { opacity: 1; }
+.sketch-frame.fading-out { opacity: 0; }
+
+/* ------- メタ情報オーバーレイ ------- */
+#overlay {
+  position: fixed;
+  left: 24px;
+  top: 24px;
+  width: min(400px, 40vw);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 600ms ease, transform 600ms ease;
+  pointer-events: none;
+}
+
+#overlay.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Twitter風カード ===== */
+#tweet {
+  position: relative;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e7e9ea;
+  font-size: 15px;
+}
+
+/* --- ヘッダー --- */
+#tweet-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#tweet-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #333;
+}
+
+#tweet-names {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+  flex: 1;
+}
+
+#tweet-name {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #e7e9ea;
+}
+
+#tweet-verified {
+  width: 18px;
+  height: 18px;
+  fill: #1d9bf0;
+  flex-shrink: 0;
+}
+
+#tweet-handle {
+  font-size: 14px;
+  color: #71767b;
+}
+
+#tweet-menu {
+  align-self: flex-start;
+  color: #71767b;
+  font-size: 18px;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+/* --- 本文（ソースコード） --- */
+#tweet-body {
+  margin: 10px 0 4px;
+  font-family: "SFMono-Regular", "JetBrains Mono", Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #e7e9ea;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 34vh;
+  overflow: hidden;
+}
+
+#tweet-body .k { color: #7cc4ff; }
+#tweet-body .s { color: #7ee787; }
+#tweet-body .n { color: #ffb86c; }
+#tweet-body .c { color: #6b7a8d; font-style: italic; }
+#tweet-body .hashtag { color: #1d9bf0; }
+
+/* タイピングカーソル */
+#tweet-body .caret {
+  color: #1d9bf0;
+  font-weight: 700;
+  margin-left: 1px;
+}
+#tweet-body .caret.blink {
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+/* --- メディア（静止画） --- */
+#tweet-media {
+  position: relative;
+  margin-top: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  line-height: 0;
+}
+
+#tweet-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* --- 投稿日時 --- */
+#tweet-date {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #71767b;
+}
+
+/* --- フッター（バッジ類） --- */
+#tweet-footer {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--ink);
+}
+
+.badge-soft {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(234, 246, 255, 0.7);
+}
+
+/* 文字数カウンター（つぶやきProcessing = 280文字以内） */
+.badge-count {
+  font-variant-numeric: tabular-nums;
+  background: rgba(126, 231, 135, 0.16);
+  border-color: rgba(126, 231, 135, 0.45);
+  color: #9dfba6;
+}
+
+.badge-count.over {
+  background: rgba(255, 90, 90, 0.18);
+  border-color: rgba(255, 90, 90, 0.5);
+  color: #ff9d9d;
+}
+
+/* タイピング完了時のひと弾み（ポンッと拡大＋発光） */
+.badge-count.pop {
+  animation: count-pop 620ms cubic-bezier(0.2, 0.9, 0.25, 1.4);
+}
+
+@keyframes count-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(126, 231, 135, 0);
+  }
+  35% {
+    transform: scale(1.28);
+    box-shadow: 0 0 16px rgba(126, 231, 135, 0.7);
+  }
+  70% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(126, 231, 135, 0);
+  }
+}
+
+/* ------- 進捗バー ------- */
+#progress {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 30;
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
+
+/* ------- タイトルバッジ（カードの上・中央揃え） ------- */
+#counter {
+  align-self: center;   /* カード幅の中で中央 */
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: rgba(234, 246, 255, 0.85);
+  background: var(--panel);
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ------- 通知 ------- */
+#notice {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  font-size: 16px;
+  color: rgba(234, 246, 255, 0.85);
+  z-index: 40;
+}
+
+/* ------- ソースコードのシンタックスハイライト ------- */
+#overlay-source .k { color: #7cc4ff; }   /* keyword */
+#overlay-source .s { color: #7ee787; }   /* string */
+#overlay-source .n { color: #ffb86c; }   /* number */
+#overlay-source .c { color: #6b7a8d; font-style: italic; } /* comment */
