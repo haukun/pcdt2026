@@ -236,8 +236,9 @@ viewer/index.html?typing=7000&duration=30000
 ### キャンバスサイズと配置（右側領域の中央）
 
 - 各作品はサイズがまちまち（多くは 720×720 だが例外あり）。
-- iframe 内のブリッジが `load` 後に canvas の見た目サイズ（clientWidth/Height優先）を
+- iframe 内のブリッジが `load` 後 **300ms / 800ms** に canvas の見た目サイズ（clientWidth/Height優先）を
   `postMessage({ __pv:true, type:'setup-complete', w, h })` で親に通知する。
+  フルスクリーン切り替え直後の viewport 未確定による初回サイズずれを避けるため、短すぎる初回通知は行わない。
 - 親は受け取ったサイズで `#frames` の実寸を設定し、`transform: scale()` で等比スケール表示する。
 - **作品は左側のカード領域を避け、右側の残り領域の中央に配置する**。
   - `#stage` に `padding-left: var(--card-zone)` を与えて flex 中央寄せを右側に寄せる。
@@ -351,7 +352,11 @@ Viewer は `manifest.js` を `<script>` で読むが、p5 本体を `fetch`（`l
 
 ### 起動スクリプト（推奨）
 
-リポジトリルートに起動スクリプトを用意している。サーバーを立てて既定ブラウザで開く。
+リポジトリルートに起動スクリプトを用意している。サーバーを起動し、HTTP応答を確認してから
+既定ブラウザでViewerを開く（初回の `npx` ダウンロード中に早く開きすぎない）。
+macOSではGoogle Chrome / Chromium / Edgeがインストールされていれば、ブラウザ実行ファイルを直接
+`--kiosk` + `--start-fullscreen` で起動し、タブバー・ツールバーを隠す。既存ブラウザプロセスの
+影響を避けるため一時プロファイルを使用する。それ以外の環境では既定ブラウザで通常起動する。
 （ポート 8125、キャッシュ無効 `-c-1`。Node.js が必要）
 
 - Windows（エクスプローラー）: `start-viewer.cmd` をダブルクリック

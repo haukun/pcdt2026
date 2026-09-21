@@ -141,10 +141,11 @@
           }
         }
         // p5 のグローバル setup 実行後にキャンバスが生成される。
-        // deviceready 相当として、複数回サイズ報告して確実にする。
+        // フルスクリーン切り替え直後は iframe の viewport が安定していない場合があるため、
+        // 初回の短い通知は避け、少し待ってからサイズを確定する。
         window.addEventListener('load', function () {
-          setTimeout(report, 60);
           setTimeout(report, 300);
+          setTimeout(report, 800);
         });
         window.onerror = function (m, s, l) {
           parent.postMessage({ __pv: true, type: 'sketch-error', message: String(m), line: l }, '*');
