@@ -1,0 +1,17 @@
+{
+  "_comment": "作品ごとに本文（ソースコード）末尾へ差し込む追加テキスト。id → 文字列。本文は「コード + 改行 + caption(あれば) + 改行 + #つぶやきProcessing」で組み立てる。ハッシュタグや日本語を含めてよい（ハッシュタグはハイライトされ、文字数カウントにも含まれる）。",
+  "captions": {
+    "tp5_210213_dc_Grass": "#PCD2021 草原",
+    "tp5_210214_dc_Ocean": "#PCD2021 海",
+    "tp5_210215_dc_Sky": "#PCD2021 空",
+    "tp5_210216_dc_Kaiga": "#PCD2021 絵画",
+    "tp5_210217_dc_Desert": "#PCD2021 砂漠",
+    "tp5_210218_dc_Space": "#PCD2021 宇宙",
+    "tp5_210219_dc_BookCover": "#PCD2021 ブックカバー",
+    "tp5_210803_CreativeCodingFireWorks": "#CreativeCoding花火大会",
+    "tp5_240805_CreativeCodingFireWorks": "#CreativeCoding花火大会",
+    "tp5_210914_Pacman80080": "#800x80",
+    "tp5_220624_ShootingStar": "#minacoding",
+    "tp5_250811_Fireworks2025": "#CreativeCoding花火大会"
+  }
+}

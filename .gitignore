@@ -10,3 +10,6 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# p5.js local cache (managed outside Git; copy viewer/libs/ separately for offline production)
+viewer/libs/

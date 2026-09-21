@@ -3,9 +3,10 @@
   --accent-2: #ff2d95;
   --ink: #eaf6ff;
   --panel: rgba(10, 14, 22, 0.55);
-  /* カード領域の幅（左マージン24 + カード幅 min(400,40vw) + 右ギャップ24）。
-     #stage の padding-left に使い、作品を右側領域の中央へ寄せる。 */
-  --card-zone: calc(48px + min(400px, 40vw));
+  /* カード配置: 左端に約100pxの余白を確保 */
+  --card-left: 124px;
+  /* カード領域（左マージン + カード幅 + 右ギャップ）。作品配置にも使用。 */
+  --card-zone: calc(148px + min(480px, 48vw));
 }
 
 * { box-sizing: border-box; }
@@ -61,9 +62,9 @@ html, body {
 /* ------- メタ情報オーバーレイ ------- */
 #overlay {
   position: fixed;
-  left: 24px;
+  left: var(--card-left);
   top: 24px;
-  width: min(400px, 40vw);
+  width: min(480px, 48vw);
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -193,6 +194,31 @@ html, body {
   height: auto;
 }
 
+/* 4枚の静止画を田の字（2×2）で表示（draw 無しグリッド作品） */
+.media-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  line-height: 0;
+}
+
+.media-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+/* --- 投稿日時 --- */
+/* 文字カウンター行: 本文の直後、右寄せ */
+#tweet-charline {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
 /* --- 投稿日時 --- */
 #tweet-date {
   margin-top: 10px;
@@ -200,13 +226,18 @@ html, body {
   color: #71767b;
 }
 
-/* --- フッター（バッジ類） --- */
+/* --- バッジ類（タイトルの下・カードの外） --- */
 #tweet-footer {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+}
+
+/* イベントバッジ群のラッパ（footer 内で他のバッジと同じ並び） */
+#overlay-tags {
+  display: contents;
 }
 
 .badge {
@@ -224,22 +255,32 @@ html, body {
   color: rgba(234, 246, 255, 0.7);
 }
 
-/* 文字数カウンター（つぶやきProcessing = 280文字以内） */
-.badge-count {
-  font-variant-numeric: tabular-nums;
-  background: rgba(126, 231, 135, 0.16);
-  border-color: rgba(126, 231, 135, 0.45);
-  color: #9dfba6;
+/* イベント参加バッジ（DailyCodingChallenge / minacoding） */
+.badge-event {
+  background: linear-gradient(135deg, rgba(29, 155, 240, 0.28), rgba(120, 90, 255, 0.28));
+  border-color: rgba(120, 160, 255, 0.5);
+  color: #cfe3ff;
 }
 
-.badge-count.over {
-  background: rgba(255, 90, 90, 0.18);
-  border-color: rgba(255, 90, 90, 0.5);
+/* 文字数カウンター（日付行の右端。バッジとは別スタイル: 角丸なし・下線） */
+#overlay-chars {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #9dfba6;
+  padding: 1px 4px;
+  border-bottom: 2px solid rgba(126, 231, 135, 0.55);
+  white-space: nowrap;
+}
+
+#overlay-chars.over {
   color: #ff9d9d;
+  border-bottom-color: rgba(255, 90, 90, 0.6);
 }
 
 /* タイピング完了時のひと弾み（ポンッと拡大＋発光） */
-.badge-count.pop {
+#overlay-chars.pop {
   animation: count-pop 620ms cubic-bezier(0.2, 0.9, 0.25, 1.4);
 }
 
@@ -284,13 +325,13 @@ html, body {
   align-self: center;   /* カード幅の中で中央 */
   margin-bottom: 10px;
   text-align: center;
-  font-size: 13px;
+  font-size: 26px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
   color: rgba(234, 246, 255, 0.85);
   background: var(--panel);
-  padding: 6px 16px;
+  padding: 8px 22px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
@@ -316,3 +357,77 @@ html, body {
 #overlay-source .s { color: #7ee787; }   /* string */
 #overlay-source .n { color: #ffb86c; }   /* number */
 #overlay-source .c { color: #6b7a8d; font-style: italic; } /* comment */
+
+/* ============================================================
+   デバッグメニュー（?debug=1）
+   ============================================================ */
+#debug-panel {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 50;
+  width: 280px;
+  max-width: 42vw;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(10, 14, 22, 0.82);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--ink);
+  font-size: 13px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+#debug-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+#debug-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+#debug-nav {
+  display: flex;
+  gap: 8px;
+}
+
+#debug-nav button {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.22), rgba(255, 45, 149, 0.22));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#debug-nav button:hover {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.38), rgba(255, 45, 149, 0.38));
+}
+
+#debug-nav button:active {
+  transform: translateY(1px);
+}
+
+#debug-pos {
+  margin-top: 8px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: rgba(234, 246, 255, 0.7);
+  font-size: 12px;
+}

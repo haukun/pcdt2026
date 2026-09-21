@@ -1,0 +1,169 @@
+{
+  "_comment": "作品ごとの p5 バージョン割り当てルール。sketches をフォルダ名の昇順に並べ、from〜to（両端を含む）の範囲に version を割り当てる。範囲に含まれない作品は p5Version=null（バージョン未確定=Preview対象外）。範囲が重複した場合は先に書いたものを優先。version はローカル libs/p5-<version>.min.js に対応する。exclude に列挙した作品(id)は manifest から除外し、Preview で再生しない（重い/不具合など）。tags は id→バッジ名配列で、自動判定(dc_/minacoding等)に加えて手動でイベントバッジを付与する。",
+  "tags": {
+    "tp5_210914_Pacman80080": ["800x80"],
+    "tp5_220624_ShootingStar": ["minacoding"],
+    "tp5_250811_Fireworks2025": ["CreativeCoding花火大会"]
+  },
+  "exclude": [
+    "tp5_210108_CircleSlice",
+    "tp5_210216_dc_Kaiga",
+    "tp5_210220_MobileChain_PCD2021",
+    "tp5_210220_SymmetricCircle",
+    "tp5_210302_HairBall",
+    "tp5_210306_CrystalBall",
+    "tp5_210310_SymmetricDance",
+    "tp5_210311_EraseFlower",
+    "tp5_210313_WarmHole",
+    "tp5_210323_MirrorTorus",
+    "tp5_210324_WhiteTorus",
+    "tp5_210417_EnergyShine",
+    "tp5_210418_GoldenCircle",
+    "tp5_210610_FlowerShade",
+    "tp5_210723_Olympic",
+    "tp5_210822_KintaroCandy",
+    "tp5_210823_Smiles",
+    "tp5_210824_SmileStorm",
+    "tp5_210828_BlackLine",
+    "tp5_210829_HexBlack",
+    "tp5_210901_TileMaker",
+    "tp5_220201_dc_CircleInspiration",
+    "tp5_220204_dc_HeartSourceCode",
+    "tp5_220209_dc_Fusafusa",
+    "tp5_220214_dc_LoveColor",
+    "tp5_220214_LoveColor",
+    "tp5_220215_dc_OldLogo",
+    "tp5_220217_dc_SoundSequencer",
+    "tp5_220329_BlackTatoo",
+    "tp5_220405_ShrinkRainbow",
+    "tp5_220406_ShrinkPlant",
+    "tp5_220407_PseudoHill",
+    "tp5_220411_SquareCity",
+    "tp5_220525_MarbleGrid",
+    "tp5_220527_3rdAnniversary",
+    "tp5_220604_dc_FaceCandy",
+    "tp5_220609_dc_DoremiTone",
+    "tp5_220613_dc_flappy",
+    "tp5_220616_dc_Typing",
+    "tp5_220617_Physics",
+    "tp5_230604_minacoding_Whack_A_Mice",
+    "tp5_230612_minacoding_MapGen",
+    "tp5_230618_minacoding_TheCreation_1st_day_light",
+    "tp5_230619_minacoding_TheCreation_2nd_day_firmament",
+    "tp5_230619_minacoding_TheCreation_3rd_day_earth",
+    "tp5_230619_minacoding_TheCreation_4th_day_celestial_body",
+    "tp5_230622_minacoding_TheCreation_5th_day_fish_and_fowl",
+    "tp5_230623_minacoding_TheCreation_6th_day_mankind",
+    "tp5_240614_minacoding_BallControl",
+    "tp5_220920_BezierMandara",
+    "tp5_230629_FruitLeaves",
+    "tp5_231019_LineTunnel",
+    "tp5_240408_ShadowBall",
+    "tp5_240409_ArcTile",
+    "tp5_240411_FarAway",
+    "tp5_240518_PunchedCard",
+    "tp5_240611_minacoding_KaleidoScope",
+    "tp5_240619_minacoding_YearClock",
+    "tp5_250117_Vines4k",
+    "tp5_250507_ShootingStar2_0",
+    "tp5_250508_SplineDragon",
+    "tp5_250512_SplineShape",
+    "tp5_250514_AngelFeather",
+    "tp5_250515_Lives",
+    "tp5_250902_Rasen",
+    "tp5_260320_LayerShape",
+    "tp5_260603_Image"
+  ],
+  "ranges": [
+    {
+      "from": "tp5_210101_ShineFlower",
+      "to": "tp5_210305_PlaneDistortion",
+      "version": "1.1.9"
+    },
+    {
+      "from": "tp5_210306_CrystalBall",
+      "to": "tp5_210506_ConnectorSpin",
+      "version": "1.2.0"
+    },
+    {
+      "from": "tp5_210507_PeacockFeather",
+      "to": "tp5_210710_GeneratedStar",
+      "version": "1.3.1"
+    },
+    {
+      "from": "tp5_210711_Burning",
+      "to": "tp5_220706_ColorWalk",
+      "version": "1.4.0"
+    },
+    {
+      "from": "tp5_220707_InverseRing",
+      "to": "tp5_221031_OneShadow",
+      "version": "1.4.1"
+    },
+    {
+      "from": "tp5_221101_WhiteFlower",
+      "to": "tp5_230222_GenerativeColors",
+      "version": "1.5.0"
+    },
+    {
+      "from": "tp5_230223_AuroraLeaves",
+      "to": "tp5_230713_VaporStream",
+      "version": "1.6.0"
+    },
+    {
+      "from": "tp5_230717_FireFly",
+      "to": "tp5_231026_ShadowCircles",
+      "version": "1.7.0"
+    },
+    {
+      "from": "tp5_231029_FilterExperiments",
+      "to": "tp5_240228_Wiper",
+      "version": "1.9.0"
+    },
+    {
+      "from": "tp5_240304_Waterfall",
+      "to": "tp5_240423_BitCarpet",
+      "version": "1.9.1"
+    },
+    {
+      "from": "tp5_240428_CaleidoBit",
+      "to": "tp5_240508_ExBitCarpet",
+      "version": "1.9.2"
+    },
+    {
+      "from": "tp5_240510_BitGear",
+      "to": "tp5_240601_minacoding_ChillWave",
+      "version": "1.9.3"
+    },
+    {
+      "from": "tp5_240602_minacoding_ColorViscosity",
+      "to": "tp5_240806_BlueSplash",
+      "version": "1.9.4"
+    },
+    {
+      "from": "tp5_240808_ParticleFall",
+      "to": "tp5_241111_SeaDragon",
+      "version": "1.10.0"
+    },
+    {
+      "from": "tp5_241112_SeaFairy",
+      "to": "tp5_250422_TriangleDistortion",
+      "version": "1.11.1"
+    },
+    {
+      "from": "tp5_250428_Quadscope",
+      "to": "tp5_250526_6thAnniversary",
+      "version": "1.11.5"
+    },
+    {
+      "from": "tp5_250528_ArcLines",
+      "to": "tp5_260602_minacoding_Music",
+      "version": "1.11.13"
+    },
+    {
+      "from": "tp5_260603_Image",
+      "to": "tp5_260901_ArcTiles",
+      "version": "2.3.2"
+    }
+  ]
+}
