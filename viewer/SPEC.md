@@ -27,8 +27,8 @@ git_pcdt2026/
 │       ├── <同名>.js             作品コード（グローバルモードのp5スケッチ）
 │       ├── index.html            作品単体で開くためのHTML（Viewerは未使用）
 │       ├── canvas.png            サムネイル静止画（カードに埋め込む）
-│       ├── sketch.properties     Processingメタ（Viewerは未使用）
-│       └── libraries/p5.min.js   その作品が使うp5本体
+│       └── sketch.properties     Processingメタ（Viewerは未使用）
+│       （libraries/ は削除済み。個別 index.html は使わない）
 ├── resources/
 │   └── guu.png                   カードのプロフィールアイコン
 └── viewer/                       ★ Viewer本体
@@ -69,8 +69,9 @@ node viewer/build-manifest.mjs
 - 作品コード: フォルダ内の `<フォルダ名>.js` を最優先。無ければ直下の `.js` を採用するが、
   **一時ファイル `p5js-temp-*.js` は除外**する（作業中の残骸のため）。
 - **p5 バージョン: `viewer/p5-versions.json` の範囲ルールで割り当てる**（下記）。
-  フォルダ同梱の `libraries/p5.min.js` は p5エディターの保存時デフォルトで、作品が実際に
-  使う版とは異なるため **使わない**。範囲に含まれない作品は `p5Version = null`。
+  フォルダ同梱の `libraries/p5.min.js` は保存時デフォルトで作品の実使用版と異なるため使わない。
+  現在は `sketches` 内の libraries 自体を削除済み。p5本体は `viewer/libs/` のみを使う。
+  範囲に含まれない作品は `p5Version = null`。
 - 静止画: `<フォルダ>/canvas.png`。あれば相対パスを記録、無ければ `null`。
 - 生成後、確定/未確定(null)の件数、使用バージョン、ローカルに無い p5 ファイル、
   スキップした作品をログに出す。
@@ -390,8 +391,8 @@ node viewer/build-manifest.mjs
   これらのキャッシュは **Git管理外** なので、Gitから取得するだけでは足りない。
   Mac等の本番環境へは `viewer/libs/` フォルダを別途コピーする。無い版は build-manifest が警告し、
   その版の作品は再生されない。
-- **P5（p5 欠落作品）は範囲ルール化で解消**: 同梱 p5 を読まなくなったため、
-  `libraries/p5.min.js` の有無は無関係になった（DATA_ISSUES.md 参照）。
+- **P5（p5 欠落作品）は範囲ルール化と libraries 削除で解消**: 同梱p5を読まず、`viewer/libs/`
+  のバージョン別キャッシュだけを参照するため、sketches内の `libraries/` は不要。
 - **`sketches/` データの例外**: フォルダ名とjs名の不一致・入れ子・一時ファイル・
   Python作品などの例外は `viewer/DATA_ISSUES.md` に記録。多くは修正済み。
 - **表示名・アイコンが固定**: 複数作者に対応する場合は entry にメタを持たせる拡張が必要。
@@ -439,7 +440,9 @@ VS Code では **VisualJJ** 拡張から操作する。
 
 ### 変更履歴
 
-- **p5 バージョンを範囲ルール方式へ（オフライン本番対応）**:
+- **sketches内の `libraries/` を削除**: Previewは `viewer/libs/` のローカルp5キャッシュだけを使い、
+  個別作品の `index.html` は運用しないため、992個・約720MBの重複p5ファイルを削除。
+  `viewer/libs/` はGit管理外なので、本番/Macへは別途コピーする。
   - 同梱 `libraries/p5.min.js` は保存時デフォルトで実際の使用版と異なると判明。
     版判定をやめ、`viewer/p5-versions.json` の範囲ルールで割り当てる方式に変更。
   - 使う版は外部CDNではなくローカル `libs/p5-<version>.min.js` を参照（本番はネット接続不可）。
