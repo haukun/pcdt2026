@@ -47,6 +47,10 @@
   // ---- デバッグモード（?debug=1） ----
   const DEBUG = /(?:^|[?&])debug=1(?:&|$)/.test(location.search);
 
+  // ---- 固定表示モード（?work=<id or 名前>）: 指定作品だけを表示し続ける ----
+  const PIN_QUERY = urlParams.get('work');
+  const PIN = !!(PIN_QUERY && PIN_QUERY.trim());
+
   // ---- 状態 ----
   let entries = (window.PREVIEW_MANIFEST || []).slice();
   const p5Files = window.PREVIEW_P5 || {}; // { version: "libs/p5-<v>.min.js" }
@@ -508,9 +512,9 @@
     try {
       size = await loadIntoSlot(nextSlot, entry);
     } catch (e) {
-      // p5 取得失敗などはこの作品をスキップ。debug 中は自動で進めない。
+      // p5 取得失敗などはこの作品をスキップ。debug / 固定表示中は自動で進めない。
       console.warn('[load failed] ' + entry.id + ':', e.message);
-      if (!DEBUG) {
+      if (!DEBUG && !PIN) {
         clearTimeout(advanceTimer);
         advanceTimer = setTimeout(() => playLoop(), 400);
       }
@@ -542,8 +546,8 @@
       nextSlot.removeAttribute('src');
     }, CROSSFADE + 100);
 
-    // 自動遷移は debug 中は無効。通常時のみ進捗バー＆10秒タイマー。
-    if (DEBUG) {
+    // 自動遷移は debug / 固定表示(PIN) 中は無効。通常時のみ進捗バー＆切替タイマー。
+    if (DEBUG || PIN) {
       clearTimeout(advanceTimer);
       progressFill.style.width = '0%';
     } else {
@@ -612,6 +616,22 @@
       return;
     }
 
+    // 固定表示モード: ?work=<id or 名前> の作品だけを表示し続ける。
+    // 除外・バージョン用意の有無に関わらず、全作品(manifest)から探す。
+    if (PIN) {
+      const found = findWork(PIN_QUERY, window.PREVIEW_MANIFEST || []);
+      if (!found) {
+        showNotice('指定された作品が見つかりません: ' + PIN_QUERY);
+        return;
+      }
+      if (!found.p5Version || !p5Files[found.p5Version]) {
+        showNotice('この作品は p5 バージョン未確定/未用意のため表示できません: ' + found.id);
+        return;
+      }
+      playEntry(found); // 自動遷移せず、この作品を表示し続ける
+      return;
+    }
+
     if (DEBUG) {
       // デバッグ: シャッフルせず、entries の並び順（フォルダ名昇順）そのままで扱う。
       order = entries.map((_, i) => i);
@@ -622,6 +642,23 @@
       buildOrder();
       playLoop();
     }
+  }
+
+  // ?work= の値から作品を探す。
+  //   1) id 完全一致（大小無視）
+  //   2) title 完全一致（大小無視）
+  //   3) id / title の部分一致（最初の1件）
+  function findWork(query, list) {
+    const q = String(query).trim().toLowerCase();
+    if (!q) return null;
+    let hit = list.find((e) => e.id.toLowerCase() === q);
+    if (hit) return hit;
+    hit = list.find((e) => (e.title || '').toLowerCase() === q);
+    if (hit) return hit;
+    hit = list.find((e) =>
+      e.id.toLowerCase().includes(q) || (e.title || '').toLowerCase().includes(q)
+    );
+    return hit || null;
   }
 
   // ============================================================
