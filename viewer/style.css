@@ -27,19 +27,70 @@ html, body {
   position: fixed;
   inset: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;   /* 作品を上端基準に配置（カードと上余白を揃える） */
   justify-content: center;
   /* 左側のカード領域を避け、右側の残り領域の中央に作品を置く */
   padding-left: var(--card-zone, 0px);
+  padding-top: 24px;         /* カードの上余白(top:24px)と揃える */
   background:
     radial-gradient(1200px 800px at 50% 40%, #0b1120 0%, #05070c 70%);
 }
 
-/* ------- 作品フレーム（中央、実サイズをスケール） ------- */
+/* 背景装飾: ノイズドット（点描）。作品・カードの背面に敷く。 */
+#stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+
+/* 背景装飾: ビネット（周辺減光）。四隅を落として中央へ視線を集める。 */
+#stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  pointer-events: none;
+}
+
+/* ------- 作品フレーム（上端基準、実サイズをスケール） ------- */
 #frames {
   position: relative;
-  width: 0;   /* JSで作品サイズを設定 */
+  z-index: 1;                 /* 背景装飾より前面 */
+  width: 0;                   /* JSで作品サイズを設定 */
   height: 0;
+  transform-origin: top center; /* 上端中央を基準に拡縮（上余白を固定） */
+}
+
+/* 額縁: 作品の外周に細いダーク金属枠。光沢を控えめに入れる（作品サイズに追従） */
+#frames::before {
+  content: "";
+  position: absolute;
+  /* 作品の外側へ額の厚み分だけ広げる（極細） */
+  inset: -5px;
+  z-index: -1; /* 作品の背面 */
+  border-radius: 3px;
+  /* 額の面（ダーク金属。斜めのトーン変化 + 細い光沢帯で金属光沢） */
+  background:
+    linear-gradient(115deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.10) 48%,
+      rgba(255, 255, 255, 0.02) 54%,
+      transparent 62%),
+    linear-gradient(135deg, #1b1d23 0%, #2c2f38 45%, #15171c 55%, #23262e 100%);
+  /* 外周の落ち影 + 縁のハイライト + 内側の窪み */
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 0 10px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
 }
 
 .sketch-frame {
@@ -53,7 +104,6 @@ html, body {
   opacity: 0;
   transition: opacity 900ms ease;
   pointer-events: none;
-  box-shadow: 0 30px 120px rgba(0, 0, 0, 0.6);
 }
 
 .sketch-frame.active { opacity: 1; }
@@ -220,24 +270,18 @@ html, body {
 }
 
 /* --- 投稿日時 --- */
-#tweet-date {
+/* --- 投稿日時 + p5バージョン（カード内、同じ行） --- */
+#tweet-metaline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-top: 10px;
+}
+
+#tweet-date {
   font-size: 13px;
   color: #71767b;
-}
-
-/* --- バッジ類（タイトルの下・カードの外） --- */
-#tweet-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-/* イベントバッジ群のラッパ（footer 内で他のバッジと同じ並び） */
-#overlay-tags {
-  display: contents;
 }
 
 .badge {
@@ -303,6 +347,173 @@ html, body {
 }
 
 /* ------- 進捗バー ------- */
+/* ------- 美術館風タイトルプレート（画面下部・右側領域の中央に固定） ------- */
+/* 高さの目安。作品はこの分だけ下部を避けてスケールする（player.js の PLATE_RESERVE と揃える）。 */
+#plate {
+  position: fixed;
+  /* 右側領域内で、作品と同じ幅・同じ中心に配置する */
+  left: var(--card-zone, 0px);
+  right: 0;
+  bottom: 28px;
+  z-index: 20;
+  /* 作品の表示幅（額縁込み）。JSが --art-width を設定 */
+  width: var(--art-width, 720px);
+  max-width: calc(100% - 48px);
+  margin: 0 auto;           /* 右側領域の中央へ */
+  pointer-events: none;
+}
+
+/* タイトル: 作品幅に対して中央（バッジのサイズに影響されない） */
+/* プレート板（タイトル）: プレート幅の中央に置く。真鍮プレート風。
+   バッジは絶対配置で重ねるので、板の中央位置はバッジに影響されない。 */
+#plate .plate-board {
+  position: relative;
+  width: max-content;
+  max-width: 100%;
+  /* inline-flex では margin:auto の水平中央が効かないため、
+     ブロックの中で自動マージンにより中央寄せする */
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: center;
+  padding: 9px 20px;
+  border-radius: 3px;
+  overflow: hidden; /* 光沢ハイライトをはみ出させない */
+  /* シルバー金属の面（縦方向のトーン変化で金属らしさを出す） */
+  background:
+    linear-gradient(180deg,
+      #f2f4f7 0%,
+      #c3c8cf 18%,
+      #9aa1aa 50%,
+      #767c85 51%,
+      #aeb4bc 82%,
+      #e7eaee 100%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* 斜めの光沢（ハイライト帯） */
+#plate .plate-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.0) 38%,
+    rgba(255, 255, 255, 0.55) 48%,
+    rgba(255, 255, 255, 0.0) 58%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+#plate-title {
+  position: relative; /* 光沢帯より前面 */
+  /* 美術館の銘板らしいセリフ体（OS標準フォントのみ・オフライン対応） */
+  font-family: "Baskerville", "Hoefler Text", "Georgia", "Times New Roman",
+    "YuMincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  font-size: 18px;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  /* 金属に刻んだ刻字風（暗い文字＋上部ハイライト） */
+  color: #2b2f36;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6),
+    0 -1px 0 rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+}
+
+/* バッジ群: 作品枠の右端に重ねる。最大2列で高さを抑え、右揃え・上揃え。 */
+#plate-tags {
+  position: absolute;
+  right: 0;
+  top: 0;                      /* 上端揃え（バッジ数で上余白が変わらない） */
+  display: grid;
+  grid-auto-flow: column;      /* 縦に詰め、あふれたら左へ新しい列 */
+  grid-template-rows: auto auto; /* 1列あたり最大2行 */
+  grid-auto-columns: max-content;
+  justify-items: end;          /* 各バッジを右揃え */
+  justify-content: end;        /* 列全体を右端へ */
+  gap: 4px 6px;
+}
+
+#plate-tags .plate-tag {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 3px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+  /* 暗めメタリック（ガンメタル）な小プレート。明るいタイトルと対比 */
+  color: #e9ecf1;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.03) 46%,
+      rgba(0, 0, 0, 0.22) 54%,
+      rgba(255, 255, 255, 0.07) 100%),
+    linear-gradient(180deg, #33383f 0%, #191c21 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.55),
+    0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+/* p5 バージョンバッジ: 無彩色ガンメタル（イベントタグと差別化） */
+#plate-tags .plate-tag-version {
+  color: #eef1f5;
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.04) 46%,
+      rgba(0, 0, 0, 0.20) 54%,
+      rgba(255, 255, 255, 0.09) 100%),
+    linear-gradient(180deg, #3c424b 0%, #20242a 100%);
+}
+
+/* --- イベント別ダークメタリック（共通の光沢レイヤーに下地色を重ねる） --- */
+/* minacoding: ダークブルー */
+#plate-tags .plate-tag.tag-minacoding {
+  border-color: rgba(150, 190, 255, 0.3);
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 46%,
+      rgba(0, 0, 0, 0.24) 54%, rgba(255, 255, 255, 0.08) 100%),
+    linear-gradient(180deg, #23324f 0%, #101a2e 100%);
+}
+/* DailyCodingChallenge: ダークパープル */
+#plate-tags .plate-tag.tag-dc {
+  border-color: rgba(200, 165, 255, 0.3);
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 46%,
+      rgba(0, 0, 0, 0.24) 54%, rgba(255, 255, 255, 0.08) 100%),
+    linear-gradient(180deg, #3a2a52 0%, #1f1430 100%);
+}
+/* AltEdu2022: ダークグリーン */
+#plate-tags .plate-tag.tag-altedu {
+  border-color: rgba(150, 235, 180, 0.3);
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 46%,
+      rgba(0, 0, 0, 0.24) 54%, rgba(255, 255, 255, 0.08) 100%),
+    linear-gradient(180deg, #1f4034 0%, #0e241b 100%);
+}
+/* CreativeCoding花火大会: ダークレッド */
+#plate-tags .plate-tag.tag-fireworks {
+  border-color: rgba(255, 170, 170, 0.3);
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 46%,
+      rgba(0, 0, 0, 0.24) 54%, rgba(255, 255, 255, 0.08) 100%),
+    linear-gradient(180deg, #4d2626 0%, #2a1010 100%);
+}
+
 #progress {
   position: fixed;
   left: 0;
@@ -318,24 +529,6 @@ html, body {
   width: 0%;
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
   box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
-}
-
-/* ------- タイトルバッジ（カードの上・中央揃え） ------- */
-#counter {
-  align-self: center;   /* カード幅の中で中央 */
-  margin-bottom: 10px;
-  text-align: center;
-  font-size: 26px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-  color: rgba(234, 246, 255, 0.85);
-  background: var(--panel);
-  padding: 8px 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 /* ------- 通知 ------- */

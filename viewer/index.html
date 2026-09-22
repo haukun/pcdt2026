@@ -16,15 +16,6 @@
 
     <!-- Twitter風カードオーバーレイ -->
     <div id="overlay">
-      <!-- タイトルバッジ（カードの上） -->
-      <div id="counter"></div>
-
-      <!-- バッジ類（タイトルの下・カードの外） -->
-      <div id="tweet-footer">
-        <span id="overlay-version" class="badge badge-soft"></span>
-        <span id="overlay-tags"></span>
-      </div>
-
       <div id="tweet">
         <div id="tweet-header">
           <img id="tweet-avatar" src="../resources/guu.png" alt="">
@@ -48,8 +39,19 @@
           <img id="tweet-image" alt="">
         </div>
 
-        <div id="tweet-date"></div>
+        <div id="tweet-metaline">
+          <span id="tweet-date"></span>
+        </div>
       </div>
+    </div>
+
+    <!-- 美術館風タイトルプレート（画面下部・作品幅に合わせて固定・作品には重ねない） -->
+    <!-- 幅は作品枠に一致。タイトルは中央、バッジは右端に重ねて配置（互いに影響しない）。 -->
+    <div id="plate">
+      <div class="plate-board">
+        <span id="plate-title"></span>
+      </div>
+      <div id="plate-tags"></div>
     </div>
 
     <!-- 進捗バー -->

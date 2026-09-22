@@ -35,14 +35,13 @@
   const slotA = document.getElementById('slot-a');
   const slotB = document.getElementById('slot-b');
   const overlay = document.getElementById('overlay');
-  const overlayVersion = document.getElementById('overlay-version');
   const overlayChars = document.getElementById('overlay-chars');
-  const overlayTags = document.getElementById('overlay-tags');
   const tweetText = document.getElementById('tweet-text');
   const tweetImage = document.getElementById('tweet-image');
   const tweetDate = document.getElementById('tweet-date');
   const progressFill = document.getElementById('progress-fill');
-  const counter = document.getElementById('counter');
+  const plateTitle = document.getElementById('plate-title');
+  const plateTags = document.getElementById('plate-tags');
   const notice = document.getElementById('notice');
 
   // ---- デバッグモード（?debug=1） ----
@@ -226,14 +225,36 @@
     // computed の padding-left はブラウザが px に解決してくれる。
     const stageEl = framesEl.parentElement;
     const cardZone = parseFloat(getComputedStyle(stageEl).paddingLeft) || 0;
-    const availW = Math.max(1, window.innerWidth - cardZone);
 
-    const margin = 0.92; // 余白
+    // 額縁は #frames::before が inset:-FRAME_BORDER で外側にはみ出す。
+    // 額縁込みで上端をカードと揃えるため、額縁厚み分を余白・利用可能領域に織り込む。
+    const FRAME_BORDER = 5;    // CSSの #frames::before inset と揃える(px)
+    const TOP_MARGIN = 24;     // #stage の padding-top と揃える
+    const PLATE_RESERVE = 84;  // プレート高さ + 余白(px)。CSSの #plate と揃える
+
+    // 額縁は左右・上下に FRAME_BORDER×scale はみ出すので、その分を差し引いて収める。
+    const availW = Math.max(1, window.innerWidth - cardZone);
+    const availH = Math.max(1, window.innerHeight - TOP_MARGIN - PLATE_RESERVE);
+
+    // scale は「作品 + 額縁(両側)」が利用可能領域に収まる値。
     const scale = Math.min(
-      (availW * margin) / w,
-      (window.innerHeight * margin) / h
+      (availW * 0.98 - FRAME_BORDER * 2) / w,
+      (availH - FRAME_BORDER * 2) / h
     );
     framesEl.style.transform = 'scale(' + scale + ')';
+
+    // 利用可能領域（上余白の下〜プレートの上）の縦中央に配置する。
+    // 表示高さ = (作品 + 額縁上下) × scale。#frames は幅0の点なので、
+    // 額縁の上はみ出し分 FRAME_BORDER×scale を足して基準を額縁上端に合わせ、
+    // さらに領域内で中央に来るよう余りの半分を加える。
+    const displayH = (h + FRAME_BORDER * 2) * scale;
+    const centerOffset = Math.max(0, (availH - displayH) / 2);
+    framesEl.style.marginTop = (FRAME_BORDER * scale + centerOffset) + 'px';
+
+    // プレート幅を作品の表示幅（額縁込み）に合わせる。
+    // → タイトルは作品幅に対して中央、バッジは作品枠の右端に揃う。
+    const displayW = (w + FRAME_BORDER * 2) * scale;
+    document.documentElement.style.setProperty('--art-width', displayW + 'px');
   }
 
   window.addEventListener('resize', () => fitStage(currentSize));
@@ -321,7 +342,6 @@
 
   // ---- オーバーレイ更新（本文は1文字ずつタイピング、文字数カウンターも連動） ----
   function showOverlay(entry) {
-    overlayVersion.textContent = 'p5.js v' + (entry.p5Version || '?');
 
     // カードのメディア: グリッド作品は 1〜4.png を田の字、それ以外は canvas.png 1枚。
     const media = tweetImage.parentElement; // #tweet-media
@@ -354,14 +374,28 @@
     // 投稿日時（フォルダ名 YYMMDD 由来）
     tweetDate.textContent = formatDate(entry.date);
 
-    // イベント参加バッジ（DailyCodingChallenge / minacoding）
-    overlayTags.innerHTML = '';
+    // 美術館プレート（画面下部固定）: 左にタイトル、右にバッジを縦積み。
+    plateTitle.textContent = entry.title || entry.id;
+    plateTags.innerHTML = '';
+    // イベントタグのバッジ（種別ごとに色分け）
+    const tagClassMap = {
+      'minacoding': 'tag-minacoding',
+      'DailyCodingChallenge': 'tag-dc',
+      'AltEdu2022': 'tag-altedu',
+      'CreativeCoding花火大会': 'tag-fireworks',
+    };
     (entry.tags || []).forEach((tag) => {
       const span = document.createElement('span');
-      span.className = 'badge badge-event';
+      span.className = 'plate-tag';
+      if (tagClassMap[tag]) span.classList.add(tagClassMap[tag]);
       span.textContent = tag;
-      overlayTags.appendChild(span);
+      plateTags.appendChild(span);
     });
+    // p5 バージョンもバッジ扱い
+    const verBadge = document.createElement('span');
+    verBadge.className = 'plate-tag plate-tag-version';
+    verBadge.textContent = 'p5.js v' + (entry.p5Version || '?');
+    plateTags.appendChild(verBadge);
 
     // 改行は LF(1文字) 換算（つぶやきProcessing のカウント方式）。
     // 本文 = ソース + 改行 + [重複を除いた caption + 半角スペース] + ハッシュタグ。
@@ -455,10 +489,6 @@
     overlayChars.classList.add('pop');
   }
 
-  function updateCounter(entry) {
-    counter.textContent = entry.title || entry.id;
-  }
-
   // ---- 自動再生ループ: 次の作品を選んで再生（10秒後に自分を呼ぶ） ----
   function playLoop() {
     const entry = nextEntry();
@@ -503,7 +533,6 @@
     playCount++;
 
     showOverlay(entry);
-    updateCounter(entry);
     if (DEBUG) syncDebugPanel();
 
     // 旧スロットは少し後にクリア（メモリ解放 & 実行停止）
